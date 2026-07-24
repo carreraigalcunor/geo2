@@ -1,0 +1,201 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8"></meta>
+  <title>Mapa de Investigaciones IGAL</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"></meta>
+
+  <!-- Leaflet -->
+  <link href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" rel="stylesheet"></link>
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+  <!-- Fullscreen -->
+  <link href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" rel="stylesheet"></link>
+  <script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+
+  <!-- MarkerCluster -->
+  <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" rel="stylesheet"></link>
+  <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" rel="stylesheet"></link>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- SubGroup -->
+  <script src="https://unpkg.com/leaflet.featuregroup.subgroup/dist/leaflet.featuregroup.subgroup.js"></script>
+
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #map { height: 80vh; width: 100%; }
+    .popup-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    #buscador {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.2);
+      font-family: Arial;
+      font-size: 14px;
+      width: 250px;
+    }
+    #resultadosBusqueda {
+      max-height: 120px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    .resultado-item {
+      cursor: pointer;
+      padding: 4px;
+      border-bottom: 1px solid #ccc;
+    }
+    .resultado-item:hover {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Buscador -->
+<div id="buscador">
+  <label><strong>Buscar por:</strong></label>
+  <select id="campoBusqueda">
+    <option value="Nombre">Nombre</option>
+    <option value="Institucion">Institución</option>
+    <option value="Municipio">Municipio</option>
+    <option value="Suigal">Supervisor IGAL</option>
+  </select><br />
+  <input id="valorBusqueda" placeholder="Escriba su búsqueda" style="margin-top: 5px; padding: 5px; width: 100%;" type="text" />
+  <button id="btnBuscar" style="background: #1d2782; border-radius: 4px; border: none; color: white; cursor: pointer; margin-top: 5px; padding: 5px 10px;">Buscar</button>
+  <div id="resultadosBusqueda"></div>
+</div>
+
+<script>
+  const map = L.map('map', {
+    fullscreenControl: true
+  }).setView([15.5933, -90.3543], 9);
+
+  L.tileLayer(' https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z} ', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const clusterGroup = L.markerClusterGroup().addTo(map);
+  const subGruposPorAnio = {};
+  const todosLosMarcadores = [];
+
+  const iconosPorAnio = {
+    "2023": 'https://cdn-icons-png.flaticon.com/512/3176/3176297.png',
+    "2024": 'https://cdn-icons-png.flaticon.com/512/3176/3176298.png',
+    "2025": 'https://cdn-icons-png.flaticon.com/512/6454/6454324.png',
+    "default": 'https://cdn-icons-png.flaticon.com/512/2659/2659980.png'
+  };
+
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_p-iO2tSlZBW5vhbLZUoxTDqUQhs8EgNJRm5kilNrNyQy_YDuJo4q9D-qs7ehKw7UEKoRCy0DOqFI/pub?output=csv";
+
+  Papa.parse(csvUrl, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function (results) {
+      results.data.forEach(row => {
+        const lat = parseFloat(row["Latitud"].replace(",", "."));
+        const lng = parseFloat(row["Longitud"].replace(",", "."));
+        const anio = row["Anio"]?.trim() || "Sin año";
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+          if (!subGruposPorAnio[anio]) {
+            subGruposPorAnio[anio] = L.featureGroup.subGroup(clusterGroup);
+          }
+
+          const iconUrl = iconosPorAnio[anio] || iconosPorAnio["default"];
+          const icono = L.icon({
+            iconUrl: iconUrl,
+            iconSize: [30, 30],
+            iconAnchor: [13, 26],
+            popupAnchor: [0, -20]
+          });
+
+          // Extraer ID de imagen de Google Drive
+const fotoUrl = row["Foto"]?.trim() || '';
+
+          const popupContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 280px;">
+              ${fotoUrl ? `<img class="popup-img" src="${fotoUrl}" alt="Foto">` : ""}
+              <div style="font-size: 16px; font-weight: bold;">${row["Nombre"] || "Sin nombre"}</div>
+              <div style="font-size: 13px; text-align: justify;">
+                <strong>Institución:</strong> ${row["Institucion"] || ""}<br>
+                <strong>Localización:</strong> ${row["Localizacion"] || ""}<br>
+                <strong>Municipio:</strong> ${row["Municipio"] || ""}<br>
+                <strong>Año:</strong> ${anio}<br>
+                <strong>Supervisor IGAL:</strong> ${row["Suigal"] || ""}<br>
+                <strong>Supervisor Unidad:</strong> ${row["Sunidad"] || ""}<br>
+                <strong>Diagnóstico:</strong> ${row["Codiagnostico"] || ""}<br>
+              </div>
+            </div>`;
+
+          const datosBusqueda = {
+            "Nombre": row["Nombre"] || "",
+            "Institucion": row["Institucion"] || "",
+            "Municipio": row["Municipio"] || "",
+            "Suigal": row["Suigal"] || ""
+          };
+
+          const marker = L.marker([lat, lng], { icon: icono, datos: datosBusqueda }).bindPopup(popupContent);
+
+          subGruposPorAnio[anio].addLayer(marker);
+          todosLosMarcadores.push(marker);
+        }
+      });
+
+      const capas = {};
+      Object.entries(subGruposPorAnio).forEach(([anio, grupo]) => {
+        grupo.addTo(map);
+        capas[`<img src="${iconosPorAnio[anio] || iconosPorAnio["default"]}" width="18"> ${anio}`] = grupo;
+      });
+
+      L.control.layers(null, capas, { collapsed: false }).addTo(map);
+    }
+  });
+
+  document.getElementById("btnBuscar").addEventListener("click", function () {
+    const campo = document.getElementById("campoBusqueda").value;
+    const valor = document.getElementById("valorBusqueda").value.trim().toLowerCase();
+    const resultadosDiv = document.getElementById("resultadosBusqueda");
+    resultadosDiv.innerHTML = "";
+
+    let encontrados = [];
+
+    todosLosMarcadores.forEach(marker => {
+      const dato = marker.options.datos[campo]?.toLowerCase() || "";
+      if (dato.includes(valor)) {
+        encontrados.push(marker);
+        const div = document.createElement("div");
+        div.className = "resultado-item";
+        div.textContent = marker.options.datos["Nombre"];
+        div.onclick = () => {
+          map.setView(marker.getLatLng(), 16);
+          marker.openPopup();
+        };
+        resultadosDiv.appendChild(div);
+      }
+    });
+
+    if (encontrados.length > 0) {
+      const grupo = L.featureGroup(encontrados);
+      map.fitBounds(grupo.getBounds());
+    } else {
+      resultadosDiv.innerHTML = "<em>No se encontraron resultados.</em>";
+    }
+  });
+</script>
+
+</body>
+</html>
