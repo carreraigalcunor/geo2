@@ -843,34 +843,45 @@
       margin: 5px 0;
     }
 
-    .leyenda-punto {
-      width: 11px;
-      height: 11px;
-      border: 2px solid white;
-      border-radius: 50%;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+    .leyenda-icono-persona {
+      width: 24px;
+      height: 29px;
+      flex: 0 0 24px;
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.22));
     }
 
     /* ======================================================
-       MARCADOR PERSONALIZADO
+       MARCADOR PERSONALIZADO DE PERSONA
     ====================================================== */
 
-    .marcador-investigacion {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      border: 3px solid white;
-      border-radius: 50% 50% 50% 8px;
-      color: white;
-      box-shadow: 0 5px 13px rgba(0, 0, 0, 0.32);
-      transform: rotate(-45deg);
+    .marcador-persona-wrap {
+      width: 44px;
+      height: 52px;
+      transform-origin: center bottom;
+      transition: transform .18s ease, filter .18s ease;
+      filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .28));
     }
 
-    .marcador-investigacion i {
-      font-size: 13px;
-      transform: rotate(45deg);
+    .marcador-persona-wrap:hover {
+      transform: scale(1.16) translateY(-2px);
+      filter: drop-shadow(0 8px 7px rgba(0, 0, 0, .34));
+      z-index: 1000;
+    }
+
+    .marcador-persona-svg {
+      display: block;
+      width: 44px;
+      height: 52px;
+      overflow: visible;
+    }
+
+    .marcador-persona-anio {
+      font-family: Arial, sans-serif;
+      font-size: 8px;
+      font-weight: 800;
+      fill: #ffffff;
+      text-anchor: middle;
+      letter-spacing: .2px;
     }
 
     /* ======================================================
@@ -1116,13 +1127,17 @@
     const zoomInicial = 9;
 
     const coloresPorAnio = {
-      "2023": "#8bc34a",
-      "2024": "#43a047",
-      "2025": "#0b7a46",
-      "2026": "#075b36",
-      "Sin año": "#718078",
-      "default": "#0b7a46"
+      "2024": "#2E86DE",
+      "2025": "#27AE60",
+      "2026": "#E67E22",
+      "2027": "#8E44AD",
+      "2028": "#C0392B",
+      "2029": "#8D6E63",
+      "2030": "#D4AC0D"
     };
+
+    const colorMarcadorDefault = "#718078";
+    const aniosConIconoPersona = Object.keys(coloresPorAnio);
 
     /* ======================================================
        MAPA
@@ -1283,26 +1298,47 @@
       );
     }
 
+    function normalizarAnio(anio) {
+      const coincidencia = String(anio ?? "").match(/\b(20\d{2})\b/);
+      return coincidencia ? coincidencia[1] : "";
+    }
+
     function colorDelAnio(anio) {
-      return coloresPorAnio[anio] || coloresPorAnio.default;
+      const anioNormalizado = normalizarAnio(anio);
+      return coloresPorAnio[anioNormalizado] || colorMarcadorDefault;
+    }
+
+    function svgPersonaMarcador(anio, compacto = false) {
+      const anioNormalizado = normalizarAnio(anio);
+      const color = colorDelAnio(anioNormalizado);
+      const etiqueta = anioNormalizado ? anioNormalizado.slice(-2) : "";
+      const claseSvg = compacto ? "leyenda-icono-persona" : "marcador-persona-svg";
+
+      return `
+        <svg class="${claseSvg}" viewBox="0 0 44 52" aria-hidden="true">
+          <path
+            d="M22 1.5C10.7 1.5 2 10.1 2 21.2c0 14.6 20 29.3 20 29.3s20-14.7 20-29.3C42 10.1 33.3 1.5 22 1.5Z"
+            fill="${color}"
+            stroke="#ffffff"
+            stroke-width="2.6"
+          />
+          <circle cx="22" cy="16" r="6.1" fill="#ffffff"/>
+          <path
+            d="M11.8 31.8c.9-7 5-10.4 10.2-10.4s9.3 3.4 10.2 10.4c.2 1.4-.9 2.7-2.3 2.7H14.1c-1.4 0-2.5-1.3-2.3-2.7Z"
+            fill="#ffffff"
+          />
+          ${etiqueta ? `<text x="22" y="43.2" class="marcador-persona-anio">${etiqueta}</text>` : ""}
+        </svg>
+      `;
     }
 
     function crearIconoMarcador(anio) {
-      const color = colorDelAnio(anio);
-
       return L.divIcon({
         className: "",
-        html: `
-          <div
-            class="marcador-investigacion"
-            style="background:${color};"
-          >
-            <i class="fa-solid fa-book-open"></i>
-          </div>
-        `,
-        iconSize: [38, 42],
-        iconAnchor: [19, 38],
-        popupAnchor: [0, -35]
+        html: `<div class="marcador-persona-wrap">${svgPersonaMarcador(anio)}</div>`,
+        iconSize: [44, 52],
+        iconAnchor: [22, 50],
+        popupAnchor: [0, -46]
       });
     }
 
@@ -1936,41 +1972,42 @@
     ====================================================== */
 
     function crearLeyenda() {
-      const aniosExistentes = valoresUnicos("anio").sort(function(a, b) {
-        if (a === "Sin año") return 1;
-        if (b === "Sin año") return -1;
-        return Number(b) - Number(a);
-      });
+      const aniosPresentes = new Set(
+        valoresUnicos("anio")
+          .map(normalizarAnio)
+          .filter(Boolean)
+      );
+
+      // La leyenda solo muestra años que realmente existen en el CSV
+      // y que tienen color configurado entre 2024 y 2030.
+      const aniosActivos = aniosConIconoPersona
+        .filter(anio => aniosPresentes.has(anio))
+        .sort((a, b) => Number(a) - Number(b));
+
+      if (!aniosActivos.length) {
+        return;
+      }
 
       const leyenda = L.control({
         position: "bottomright"
       });
 
       leyenda.onAdd = function() {
-        const div = L.DomUtil.create(
-          "div",
-          "leyenda-anios"
-        );
+        const div = L.DomUtil.create("div", "leyenda-anios");
+        let contenido = "<strong>Investigaciones por año</strong>";
 
-        let contenido = "<strong>Año de investigación</strong>";
-
-        aniosExistentes.forEach(function(anio) {
+        aniosActivos.forEach(function(anio) {
           contenido += `
             <div class="leyenda-fila">
-              <span
-                class="leyenda-punto"
-                style="background:${colorDelAnio(anio)};"
-              ></span>
+              ${svgPersonaMarcador(anio, true)}
               <span>${textoSeguro(anio)}</span>
             </div>
           `;
         });
 
         div.innerHTML = contenido;
-
         L.DomEvent.disableClickPropagation(div);
         L.DomEvent.disableScrollPropagation(div);
-
         return div;
       };
 
