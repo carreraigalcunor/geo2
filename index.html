@@ -57,17 +57,17 @@
 
   <style>
     :root {
-      --azul-principal: #152a63;
-      --azul-secundario: #254b94;
-      --azul-claro: #eaf1ff;
-      --verde: #168367;
-      --verde-claro: #e8f7f2;
-      --gris-fondo: #f5f7fb;
-      --gris-texto: #566174;
-      --gris-borde: #dfe5ee;
+      --azul-principal: #075b36;
+      --azul-secundario: #0b7a46;
+      --azul-claro: #e8f5ee;
+      --verde: #0b7a46;
+      --verde-claro: #e8f5ee;
+      --gris-fondo: #f4f7f5;
+      --gris-texto: #56645d;
+      --gris-borde: #dce6e0;
       --blanco: #ffffff;
       --rojo: #b23a48;
-      --sombra: 0 12px 35px rgba(20, 42, 99, 0.14);
+      --sombra: 0 12px 35px rgba(7, 91, 54, 0.17);
       --radio: 16px;
       --ancho-panel: 365px;
     }
@@ -110,7 +110,7 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      background: #d9e2ec;
+      background: #dce8e1;
     }
 
     /* ======================================================
@@ -203,7 +203,7 @@
         linear-gradient(
           135deg,
           var(--azul-principal),
-          #224a91
+          #0b7a46
         );
     }
 
@@ -261,7 +261,7 @@
       padding: 17px 18px 20px;
       overflow-y: auto;
       scrollbar-width: thin;
-      scrollbar-color: #b7c2d3 transparent;
+      scrollbar-color: #aebfb5 transparent;
     }
 
     .panel-contenido::-webkit-scrollbar {
@@ -270,7 +270,7 @@
 
     .panel-contenido::-webkit-scrollbar-thumb {
       border-radius: 10px;
-      background: #bdc7d5;
+      background: #b8c9bf;
     }
 
     /* ======================================================
@@ -296,7 +296,7 @@
     .campo label {
       display: block;
       margin-bottom: 6px;
-      color: #344054;
+      color: #34483d;
       font-size: 12px;
       font-weight: 700;
     }
@@ -309,7 +309,7 @@
       position: absolute;
       top: 50%;
       left: 12px;
-      color: #8793a6;
+      color: #75877d;
       font-size: 13px;
       transform: translateY(-50%);
       pointer-events: none;
@@ -322,7 +322,7 @@
       border: 1px solid var(--gris-borde);
       border-radius: 10px;
       outline: none;
-      color: #263244;
+      color: #263a30;
       background: white;
       font-size: 13px;
       transition:
@@ -341,8 +341,8 @@
 
     .input-control:focus,
     .select-control:focus {
-      border-color: #5d7dc1;
-      box-shadow: 0 0 0 3px rgba(37, 75, 148, 0.12);
+      border-color: #38a169;
+      box-shadow: 0 0 0 3px rgba(11, 122, 70, 0.15);
     }
 
     .fila-filtros {
@@ -388,17 +388,17 @@
           var(--azul-principal),
           var(--azul-secundario)
         );
-      box-shadow: 0 7px 18px rgba(21, 42, 99, 0.2);
+      box-shadow: 0 7px 18px rgba(7, 91, 54, 0.25);
     }
 
     .btn-secundario {
       border: 1px solid var(--gris-borde);
-      color: #3f4b5c;
+      color: #3f5047;
       background: #f7f9fc;
     }
 
     .btn-secundario:hover {
-      background: #eef2f7;
+      background: #edf4f0;
     }
 
     /* ======================================================
@@ -414,13 +414,13 @@
 
     .resumen-card {
       padding: 12px;
-      border: 1px solid #dce5f1;
+      border: 1px solid #d8e9df;
       border-radius: 12px;
-      background: #f7faff;
+      background: #f6fbf8;
     }
 
     .resumen-card.verde {
-      border-color: #d1ebe2;
+      border-color: #cfe9da;
       background: var(--verde-claro);
     }
 
@@ -503,14 +503,14 @@
     }
 
     .resultado-item:hover {
-      border-color: #aebfe2;
-      box-shadow: 0 7px 18px rgba(21, 42, 99, 0.1);
+      border-color: #81c7a2;
+      box-shadow: 0 7px 18px rgba(7, 91, 54, 0.12);
       transform: translateY(-1px);
     }
 
     .resultado-titulo {
       margin-bottom: 6px;
-      color: #263247;
+      color: #263a30;
       font-size: 12px;
       font-weight: 800;
       line-height: 1.35;
@@ -533,10 +533,10 @@
 
     .sin-resultados {
       padding: 22px 14px;
-      border: 1px dashed #c7d0dc;
+      border: 1px dashed #c2d0c8;
       border-radius: 12px;
       color: var(--gris-texto);
-      background: #fafbfd;
+      background: #fafcfb;
       text-align: center;
       font-size: 12px;
       line-height: 1.5;
@@ -545,7 +545,7 @@
     .sin-resultados i {
       display: block;
       margin-bottom: 8px;
-      color: #99a5b6;
+      color: #8da095;
       font-size: 24px;
     }
 
@@ -601,7 +601,7 @@
       width: 36px;
       height: 36px;
       margin: 0 auto 10px;
-      border: 4px solid #e5eaf1;
+      border: 4px solid #e3ece7;
       border-top-color: var(--azul-secundario);
       border-radius: 50%;
       animation: girar 0.8s linear infinite;
@@ -626,7 +626,7 @@
     .leaflet-popup-content-wrapper {
       padding: 0;
       border-radius: 15px;
-      box-shadow: 0 14px 40px rgba(19, 35, 73, 0.25);
+      box-shadow: 0 14px 40px rgba(7, 70, 43, 0.25);
       overflow: hidden;
     }
 
@@ -652,8 +652,8 @@
       background:
         linear-gradient(
           135deg,
-          #e9eef8,
-          #d7e1f2
+          #edf7f1,
+          #d8eadf
         );
     }
 
@@ -670,7 +670,7 @@
       justify-content: center;
       width: 100%;
       height: 100%;
-      color: #8090ab;
+      color: #6f8f7d;
       font-size: 40px;
     }
 
@@ -681,7 +681,7 @@
       padding: 5px 9px;
       border-radius: 20px;
       color: white;
-      background: rgba(21, 42, 99, 0.88);
+      background: rgba(7, 91, 54, 0.88);
       font-size: 10px;
       font-weight: 800;
       backdrop-filter: blur(5px);
@@ -708,7 +708,7 @@
       grid-template-columns: 23px 1fr;
       gap: 7px;
       align-items: start;
-      color: #4e5a6d;
+      color: #4e6257;
       font-size: 11px;
       line-height: 1.45;
     }
@@ -720,7 +720,7 @@
     }
 
     .popup-fila strong {
-      color: #293548;
+      color: #293d32;
     }
 
     .popup-acciones {
@@ -728,7 +728,7 @@
       gap: 8px;
       margin-top: 14px;
       padding-top: 12px;
-      border-top: 1px solid #e5e9f0;
+      border-top: 1px solid #e2ebe6;
     }
 
     .popup-btn {
@@ -761,7 +761,7 @@
     .marker-cluster-small,
     .marker-cluster-medium,
     .marker-cluster-large {
-      background-color: rgba(21, 42, 99, 0.22);
+      background-color: rgba(7, 91, 54, 0.22);
     }
 
     .marker-cluster-small div,
@@ -786,7 +786,7 @@
     .leaflet-control-fullscreen {
       border: none !important;
       border-radius: 11px !important;
-      box-shadow: 0 8px 22px rgba(21, 42, 99, 0.16) !important;
+      box-shadow: 0 8px 22px rgba(7, 91, 54, 0.16) !important;
       overflow: hidden;
     }
 
@@ -805,9 +805,9 @@
       min-width: 155px;
       padding: 11px 13px;
       border-radius: 11px;
-      color: #354052;
+      color: #35483e;
       background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 8px 22px rgba(21, 42, 99, 0.16);
+      box-shadow: 0 8px 22px rgba(7, 91, 54, 0.16);
       font-size: 10px;
       backdrop-filter: blur(8px);
     }
@@ -921,14 +921,7 @@
 
     <div id="map"></div>
 
-    <!-- Encabezado flotante -->
-    <header class="encabezado">
-      <div class="encabezado-icono">
-        <i class="fa-solid fa-map-location-dot"></i>
-      </div>
 
-      
-    </header>
 
     <!-- Botón para abrir el panel -->
     <button
@@ -948,10 +941,10 @@
         <div class="panel-cabecera-superior">
 
           <div>
-            <h2>Explorar investigaciones</h2>
+            <h2>Ubicación de estudiantes</h2>
             <p>
-              Escriba una palabra o combine varios filtros para localizar
-              investigaciones en el territorio.
+             Utilice los filtros para localizar
+              a los estudiantes en el territorio.
             </p>
           </div>
 
@@ -1104,12 +1097,12 @@
     const zoomInicial = 9;
 
     const coloresPorAnio = {
-      "2023": "#6955b5",
-      "2024": "#168367",
-      "2025": "#d07918",
-      "2026": "#b23a48",
-      "Sin año": "#687386",
-      "default": "#254b94"
+      "2023": "#8bc34a",
+      "2024": "#43a047",
+      "2025": "#0b7a46",
+      "2026": "#075b36",
+      "Sin año": "#718078",
+      "default": "#0b7a46"
     };
 
     /* ======================================================
@@ -1905,8 +1898,8 @@
       );
 
       if (resultado) {
-        resultado.style.borderColor = "#6686c7";
-        resultado.style.background = "#f1f5ff";
+        resultado.style.borderColor = "#2f9b63";
+        resultado.style.background = "#edf8f2";
         resultado.scrollIntoView({
           behavior: "smooth",
           block: "nearest"
