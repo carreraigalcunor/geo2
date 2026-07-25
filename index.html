@@ -244,7 +244,7 @@
     .btn-cerrar-panel {
       position: relative;
       z-index: 3;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       width: 34px;
@@ -952,9 +952,10 @@
             id="btnCerrarPanel"
             class="btn-cerrar-panel"
             type="button"
-            aria-label="Cerrar panel"
+            title="Ocultar panel"
+            aria-label="Ocultar panel"
           >
-            <i class="fa-solid fa-xmark"></i>
+            <i class="fa-solid fa-chevron-left"></i>
           </button>
 
         </div>
@@ -2058,11 +2059,6 @@
     btnAbrirPanel.addEventListener("click", abrirPanel);
 
     window.addEventListener("resize", function() {
-      if (window.innerWidth > 900) {
-        panelLateral.classList.remove("oculto");
-        btnAbrirPanel.classList.remove("visible");
-      }
-
       map.invalidateSize();
     });
   </script>
