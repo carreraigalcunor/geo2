@@ -1,201 +1,2084 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"></meta>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+  >
+
   <title>Mapa de Investigaciones IGAL</title>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"></meta>
 
   <!-- Leaflet -->
-  <link href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" rel="stylesheet"></link>
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
 
-  <!-- Fullscreen -->
-  <link href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" rel="stylesheet"></link>
-  <script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  ></script>
 
-  <!-- MarkerCluster -->
-  <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" rel="stylesheet"></link>
-  <link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" rel="stylesheet"></link>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <!-- Leaflet Fullscreen -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css"
+  >
 
-  <!-- SubGroup -->
-  <script src="https://unpkg.com/leaflet.featuregroup.subgroup/dist/leaflet.featuregroup.subgroup.js"></script>
+  <script
+    src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"
+  ></script>
+
+  <!-- Leaflet MarkerCluster -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+  >
+
+  <script
+    src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+  ></script>
 
   <!-- PapaParse -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+  ></script>
+
+  <!-- Iconos -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
 
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; }
-    #map { height: 80vh; width: 100%; }
-    .popup-img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin-bottom: 5px;
+    :root {
+      --azul-principal: #152a63;
+      --azul-secundario: #254b94;
+      --azul-claro: #eaf1ff;
+      --verde: #168367;
+      --verde-claro: #e8f7f2;
+      --gris-fondo: #f5f7fb;
+      --gris-texto: #566174;
+      --gris-borde: #dfe5ee;
+      --blanco: #ffffff;
+      --rojo: #b23a48;
+      --sombra: 0 12px 35px rgba(20, 42, 99, 0.14);
+      --radio: 16px;
+      --ancho-panel: 365px;
     }
-    #buscador {
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #202938;
+      background: var(--gris-fondo);
+    }
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+    }
+
+    /* ======================================================
+       CONTENEDOR GENERAL
+    ====================================================== */
+
+    .visor {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #map {
       position: absolute;
-      bottom: 10px;
-      left: 10px;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: #d9e2ec;
+    }
+
+    /* ======================================================
+       ENCABEZADO
+    ====================================================== */
+
+    .encabezado {
+      position: absolute;
+      top: 18px;
+      left: calc(var(--ancho-panel) + 38px);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      max-width: calc(100% - var(--ancho-panel) - 90px);
+      padding: 13px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.93);
+      box-shadow: var(--sombra);
+      backdrop-filter: blur(12px);
+    }
+
+    .encabezado-icono {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      color: white;
+      background:
+        linear-gradient(
+          135deg,
+          var(--azul-principal),
+          var(--azul-secundario)
+        );
+    }
+
+    .encabezado-texto h1 {
+      margin: 0 0 3px;
+      color: var(--azul-principal);
+      font-size: 18px;
+      line-height: 1.15;
+    }
+
+    .encabezado-texto p {
+      margin: 0;
+      color: var(--gris-texto);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    /* ======================================================
+       PANEL LATERAL
+    ====================================================== */
+
+    .panel-lateral {
+      position: absolute;
+      top: 16px;
+      bottom: 16px;
+      left: 16px;
       z-index: 1000;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.2);
-      font-family: Arial;
-      font-size: 14px;
-      width: 250px;
+      display: flex;
+      flex-direction: column;
+      width: var(--ancho-panel);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: var(--radio);
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: var(--sombra);
+      overflow: hidden;
+      transition:
+        transform 0.3s ease,
+        opacity 0.3s ease;
+      backdrop-filter: blur(14px);
     }
-    #resultadosBusqueda {
-      max-height: 120px;
-      overflow-y: auto;
-      margin-top: 10px;
+
+    .panel-lateral.oculto {
+      transform: translateX(calc(-100% - 35px));
+      opacity: 0;
+      pointer-events: none;
     }
-    .resultado-item {
+
+    .panel-cabecera {
+      position: relative;
+      padding: 22px 22px 17px;
+      color: white;
+      background:
+        linear-gradient(
+          135deg,
+          var(--azul-principal),
+          #224a91
+        );
+    }
+
+    .panel-cabecera::after {
+      position: absolute;
+      right: -35px;
+      bottom: -60px;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      content: "";
+    }
+
+    .panel-cabecera-superior {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-cabecera h2 {
+      margin: 0 0 5px;
+      font-size: 20px;
+      line-height: 1.15;
+    }
+
+    .panel-cabecera p {
+      max-width: 260px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .btn-cerrar-panel {
+      position: relative;
+      z-index: 3;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 9px;
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
       cursor: pointer;
-      padding: 4px;
-      border-bottom: 1px solid #ccc;
     }
+
+    .panel-contenido {
+      flex: 1;
+      padding: 17px 18px 20px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #b7c2d3 transparent;
+    }
+
+    .panel-contenido::-webkit-scrollbar {
+      width: 7px;
+    }
+
+    .panel-contenido::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background: #bdc7d5;
+    }
+
+    /* ======================================================
+       BUSCADOR Y FILTROS
+    ====================================================== */
+
+    .seccion-titulo {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0 0 10px;
+      color: var(--azul-principal);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .campo {
+      margin-bottom: 13px;
+    }
+
+    .campo label {
+      display: block;
+      margin-bottom: 6px;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .input-con-icono {
+      position: relative;
+    }
+
+    .input-con-icono i {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      color: #8793a6;
+      font-size: 13px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .input-control,
+    .select-control {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--gris-borde);
+      border-radius: 10px;
+      outline: none;
+      color: #263244;
+      background: white;
+      font-size: 13px;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .input-control {
+      padding: 10px 12px 10px 37px;
+    }
+
+    .select-control {
+      padding: 9px 35px 9px 11px;
+      cursor: pointer;
+    }
+
+    .input-control:focus,
+    .select-control:focus {
+      border-color: #5d7dc1;
+      box-shadow: 0 0 0 3px rgba(37, 75, 148, 0.12);
+    }
+
+    .fila-filtros {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .acciones {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primario {
+      color: white;
+      background:
+        linear-gradient(
+          135deg,
+          var(--azul-principal),
+          var(--azul-secundario)
+        );
+      box-shadow: 0 7px 18px rgba(21, 42, 99, 0.2);
+    }
+
+    .btn-secundario {
+      border: 1px solid var(--gris-borde);
+      color: #3f4b5c;
+      background: #f7f9fc;
+    }
+
+    .btn-secundario:hover {
+      background: #eef2f7;
+    }
+
+    /* ======================================================
+       ESTADÍSTICAS
+    ====================================================== */
+
+    .resumen {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+      margin: 17px 0;
+    }
+
+    .resumen-card {
+      padding: 12px;
+      border: 1px solid #dce5f1;
+      border-radius: 12px;
+      background: #f7faff;
+    }
+
+    .resumen-card.verde {
+      border-color: #d1ebe2;
+      background: var(--verde-claro);
+    }
+
+    .resumen-card span {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--gris-texto);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .resumen-card strong {
+      color: var(--azul-principal);
+      font-size: 21px;
+    }
+
+    .resumen-card.verde strong {
+      color: var(--verde);
+    }
+
+    /* ======================================================
+       RESULTADOS
+    ====================================================== */
+
+    .resultados-cabecera {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 14px;
+      border-top: 1px solid var(--gris-borde);
+    }
+
+    .resultados-cabecera h3 {
+      margin: 0;
+      color: var(--azul-principal);
+      font-size: 14px;
+    }
+
+    .resultados-cabecera span {
+      padding: 4px 8px;
+      border-radius: 20px;
+      color: var(--azul-secundario);
+      background: var(--azul-claro);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    #resultadosBusqueda {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 11px;
+    }
+
+    .resultado-item {
+      position: relative;
+      padding: 12px 12px 11px 15px;
+      border: 1px solid var(--gris-borde);
+      border-radius: 11px;
+      background: white;
+      cursor: pointer;
+      transition:
+        transform 0.17s ease,
+        border-color 0.17s ease,
+        box-shadow 0.17s ease;
+    }
+
+    .resultado-item::before {
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: 0;
+      width: 4px;
+      border-radius: 0 6px 6px 0;
+      background: var(--azul-secundario);
+      content: "";
+    }
+
     .resultado-item:hover {
-      background-color: #eee;
+      border-color: #aebfe2;
+      box-shadow: 0 7px 18px rgba(21, 42, 99, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .resultado-titulo {
+      margin-bottom: 6px;
+      color: #263247;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .resultado-detalle {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 9px;
+      color: var(--gris-texto);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .resultado-detalle span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sin-resultados {
+      padding: 22px 14px;
+      border: 1px dashed #c7d0dc;
+      border-radius: 12px;
+      color: var(--gris-texto);
+      background: #fafbfd;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .sin-resultados i {
+      display: block;
+      margin-bottom: 8px;
+      color: #99a5b6;
+      font-size: 24px;
+    }
+
+    /* ======================================================
+       BOTÓN ABRIR PANEL
+    ====================================================== */
+
+    .btn-abrir-panel {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 1100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      border: none;
+      border-radius: 13px;
+      color: white;
+      background: var(--azul-principal);
+      box-shadow: var(--sombra);
+      cursor: pointer;
+    }
+
+    .btn-abrir-panel.visible {
+      display: flex;
+    }
+
+    /* ======================================================
+       ESTADO DE CARGA
+    ====================================================== */
+
+    .cargando {
+      position: absolute;
+      top: 50%;
+      left: calc(50% + var(--ancho-panel) / 2);
+      z-index: 1500;
+      min-width: 220px;
+      padding: 18px 22px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--sombra);
+      text-align: center;
+      transform: translate(-50%, -50%);
+    }
+
+    .cargando.oculto {
+      display: none;
+    }
+
+    .cargando-icono {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 10px;
+      border: 4px solid #e5eaf1;
+      border-top-color: var(--azul-secundario);
+      border-radius: 50%;
+      animation: girar 0.8s linear infinite;
+    }
+
+    .cargando p {
+      margin: 0;
+      color: var(--gris-texto);
+      font-size: 12px;
+    }
+
+    @keyframes girar {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ======================================================
+       POPUP
+    ====================================================== */
+
+    .leaflet-popup-content-wrapper {
+      padding: 0;
+      border-radius: 15px;
+      box-shadow: 0 14px 40px rgba(19, 35, 73, 0.25);
+      overflow: hidden;
+    }
+
+    .leaflet-popup-content {
+      width: 310px !important;
+      margin: 0;
+    }
+
+    .leaflet-popup-tip {
+      box-shadow: none;
+    }
+
+    .popup-contenedor {
+      overflow: hidden;
+      background: white;
+    }
+
+    .popup-imagen-contenedor {
+      position: relative;
+      width: 100%;
+      height: 155px;
+      overflow: hidden;
+      background:
+        linear-gradient(
+          135deg,
+          #e9eef8,
+          #d7e1f2
+        );
+    }
+
+    .popup-img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .popup-sin-imagen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: #8090ab;
+      font-size: 40px;
+    }
+
+    .popup-anio {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 9px;
+      border-radius: 20px;
+      color: white;
+      background: rgba(21, 42, 99, 0.88);
+      font-size: 10px;
+      font-weight: 800;
+      backdrop-filter: blur(5px);
+    }
+
+    .popup-cuerpo {
+      padding: 16px;
+    }
+
+    .popup-titulo {
+      margin: 0 0 11px;
+      color: var(--azul-principal);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .popup-datos {
+      display: grid;
+      gap: 8px;
+    }
+
+    .popup-fila {
+      display: grid;
+      grid-template-columns: 23px 1fr;
+      gap: 7px;
+      align-items: start;
+      color: #4e5a6d;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .popup-fila i {
+      margin-top: 2px;
+      color: var(--azul-secundario);
+      text-align: center;
+    }
+
+    .popup-fila strong {
+      color: #293548;
+    }
+
+    .popup-acciones {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e9f0;
+    }
+
+    .popup-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      min-height: 34px;
+      padding: 7px 9px;
+      border: none;
+      border-radius: 8px;
+      color: white !important;
+      background: var(--azul-principal);
+      font-size: 10px;
+      font-weight: 700;
+      text-decoration: none !important;
+      cursor: pointer;
+    }
+
+    .popup-btn.secundario {
+      color: var(--azul-principal) !important;
+      background: var(--azul-claro);
+    }
+
+    /* ======================================================
+       CLÚSTERES
+    ====================================================== */
+
+    .marker-cluster-small,
+    .marker-cluster-medium,
+    .marker-cluster-large {
+      background-color: rgba(21, 42, 99, 0.22);
+    }
+
+    .marker-cluster-small div,
+    .marker-cluster-medium div,
+    .marker-cluster-large div {
+      color: white;
+      background:
+        linear-gradient(
+          135deg,
+          var(--azul-principal),
+          var(--azul-secundario)
+        );
+      font-weight: 800;
+    }
+
+    /* ======================================================
+       CONTROLES LEAFLET
+    ====================================================== */
+
+    .leaflet-control-zoom,
+    .leaflet-control-layers,
+    .leaflet-control-fullscreen {
+      border: none !important;
+      border-radius: 11px !important;
+      box-shadow: 0 8px 22px rgba(21, 42, 99, 0.16) !important;
+      overflow: hidden;
+    }
+
+    .leaflet-control-layers {
+      max-width: 230px;
+      padding: 9px;
+      font-size: 11px;
+    }
+
+    .leaflet-control-layers-expanded {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .leyenda-anios {
+      min-width: 155px;
+      padding: 11px 13px;
+      border-radius: 11px;
+      color: #354052;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 8px 22px rgba(21, 42, 99, 0.16);
+      font-size: 10px;
+      backdrop-filter: blur(8px);
+    }
+
+    .leyenda-anios strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--azul-principal);
+      font-size: 11px;
+    }
+
+    .leyenda-fila {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 5px 0;
+    }
+
+    .leyenda-punto {
+      width: 11px;
+      height: 11px;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ======================================================
+       MARCADOR PERSONALIZADO
+    ====================================================== */
+
+    .marcador-investigacion {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 3px solid white;
+      border-radius: 50% 50% 50% 8px;
+      color: white;
+      box-shadow: 0 5px 13px rgba(0, 0, 0, 0.32);
+      transform: rotate(-45deg);
+    }
+
+    .marcador-investigacion i {
+      font-size: 13px;
+      transform: rotate(45deg);
+    }
+
+    /* ======================================================
+       RESPONSIVE
+    ====================================================== */
+
+    @media (max-width: 900px) {
+      :root {
+        --ancho-panel: 340px;
+      }
+
+      .encabezado {
+        display: none;
+      }
+
+      .btn-cerrar-panel {
+        display: flex;
+      }
+
+      .panel-lateral {
+        top: 10px;
+        bottom: 10px;
+        left: 10px;
+        width: min(360px, calc(100% - 20px));
+      }
+
+      .btn-abrir-panel {
+        top: 12px;
+        left: 12px;
+      }
+
+      .cargando {
+        left: 50%;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .panel-lateral {
+        width: calc(100% - 20px);
+      }
+
+      .fila-filtros {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .leaflet-popup-content {
+        width: 275px !important;
+      }
+
+      .popup-imagen-contenedor {
+        height: 135px;
+      }
+
+      .leaflet-control-layers {
+        max-width: 195px;
+      }
     }
   </style>
 </head>
+
 <body>
 
-<div id="map"></div>
+  <main class="visor">
 
-<!-- Buscador -->
-<div id="buscador">
-  <label><strong>Buscar por:</strong></label>
-  <select id="campoBusqueda">
-    <option value="Nombre">Nombre</option>
-    <option value="Institucion">Institución</option>
-    <option value="Municipio">Municipio</option>
-    <option value="Suigal">Supervisor IGAL</option>
-  </select><br />
-  <input id="valorBusqueda" placeholder="Escriba su búsqueda" style="margin-top: 5px; padding: 5px; width: 100%;" type="text" />
-  <button id="btnBuscar" style="background: #1d2782; border-radius: 4px; border: none; color: white; cursor: pointer; margin-top: 5px; padding: 5px 10px;">Buscar</button>
-  <div id="resultadosBusqueda"></div>
-</div>
+    <div id="map"></div>
 
-<script>
-  const map = L.map('map', {
-    fullscreenControl: true
-  }).setView([15.5933, -90.3543], 9);
+    <!-- Encabezado flotante -->
+    <header class="encabezado">
+      <div class="encabezado-icono">
+        <i class="fa-solid fa-map-location-dot"></i>
+      </div>
 
-  L.tileLayer(' https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z} ', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+      <div class="encabezado-texto">
+        <h1>Mapa de Investigaciones IGAL</h1>
+        <p>
+          Consulta territorial de investigaciones, instituciones y actividades
+          de supervisión.
+        </p>
+      </div>
+    </header>
 
-  const clusterGroup = L.markerClusterGroup().addTo(map);
-  const subGruposPorAnio = {};
-  const todosLosMarcadores = [];
+    <!-- Botón para abrir el panel -->
+    <button
+      id="btnAbrirPanel"
+      class="btn-abrir-panel"
+      type="button"
+      title="Abrir panel de búsqueda"
+      aria-label="Abrir panel de búsqueda"
+    >
+      <i class="fa-solid fa-sliders"></i>
+    </button>
 
-  const iconosPorAnio = {
-    "2023": 'https://cdn-icons-png.flaticon.com/512/3176/3176297.png',
-    "2024": 'https://cdn-icons-png.flaticon.com/512/3176/3176298.png',
-    "2025": 'https://cdn-icons-png.flaticon.com/512/6454/6454324.png',
-    "default": 'https://cdn-icons-png.flaticon.com/512/2659/2659980.png'
-  };
+    <!-- Panel lateral -->
+    <aside id="panelLateral" class="panel-lateral">
 
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_p-iO2tSlZBW5vhbLZUoxTDqUQhs8EgNJRm5kilNrNyQy_YDuJo4q9D-qs7ehKw7UEKoRCy0DOqFI/pub?output=csv";
+      <div class="panel-cabecera">
+        <div class="panel-cabecera-superior">
 
-  Papa.parse(csvUrl, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function (results) {
-      results.data.forEach(row => {
-        const lat = parseFloat(row["Latitud"].replace(",", "."));
-        const lng = parseFloat(row["Longitud"].replace(",", "."));
-        const anio = row["Anio"]?.trim() || "Sin año";
+          <div>
+            <h2>Explorar investigaciones</h2>
+            <p>
+              Escriba una palabra o combine varios filtros para localizar
+              investigaciones en el territorio.
+            </p>
+          </div>
 
-        if (!isNaN(lat) && !isNaN(lng)) {
-          if (!subGruposPorAnio[anio]) {
-            subGruposPorAnio[anio] = L.featureGroup.subGroup(clusterGroup);
-          }
+          <button
+            id="btnCerrarPanel"
+            class="btn-cerrar-panel"
+            type="button"
+            aria-label="Cerrar panel"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
 
-          const iconUrl = iconosPorAnio[anio] || iconosPorAnio["default"];
-          const icono = L.icon({
-            iconUrl: iconUrl,
-            iconSize: [30, 30],
-            iconAnchor: [13, 26],
-            popupAnchor: [0, -20]
-          });
+        </div>
+      </div>
 
-          // Extraer ID de imagen de Google Drive
-const fotoUrl = row["Foto"]?.trim() || '';
+      <div class="panel-contenido">
 
-          const popupContent = `
-            <div style="font-family: Arial, sans-serif; max-width: 280px;">
-              ${fotoUrl ? `<img class="popup-img" src="${fotoUrl}" alt="Foto">` : ""}
-              <div style="font-size: 16px; font-weight: bold;">${row["Nombre"] || "Sin nombre"}</div>
-              <div style="font-size: 13px; text-align: justify;">
-                <strong>Institución:</strong> ${row["Institucion"] || ""}<br>
-                <strong>Localización:</strong> ${row["Localizacion"] || ""}<br>
-                <strong>Municipio:</strong> ${row["Municipio"] || ""}<br>
-                <strong>Año:</strong> ${anio}<br>
-                <strong>Supervisor IGAL:</strong> ${row["Suigal"] || ""}<br>
-                <strong>Supervisor Unidad:</strong> ${row["Sunidad"] || ""}<br>
-                <strong>Diagnóstico:</strong> ${row["Codiagnostico"] || ""}<br>
-              </div>
-            </div>`;
+        <div class="seccion-titulo">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          Búsqueda general
+        </div>
 
-          const datosBusqueda = {
-            "Nombre": row["Nombre"] || "",
-            "Institucion": row["Institucion"] || "",
-            "Municipio": row["Municipio"] || "",
-            "Suigal": row["Suigal"] || ""
-          };
+        <div class="campo">
+          <label for="busquedaGeneral">
+            Nombre, institución, municipio o supervisor
+          </label>
 
-          const marker = L.marker([lat, lng], { icon: icono, datos: datosBusqueda }).bindPopup(popupContent);
+          <div class="input-con-icono">
+            <i class="fa-solid fa-magnifying-glass"></i>
 
-          subGruposPorAnio[anio].addLayer(marker);
-          todosLosMarcadores.push(marker);
-        }
-      });
+            <input
+              id="busquedaGeneral"
+              class="input-control"
+              type="search"
+              placeholder="Ejemplo: Cobán, MAGA, Juan Pérez..."
+              autocomplete="off"
+            >
+          </div>
+        </div>
 
-      const capas = {};
-      Object.entries(subGruposPorAnio).forEach(([anio, grupo]) => {
-        grupo.addTo(map);
-        capas[`<img src="${iconosPorAnio[anio] || iconosPorAnio["default"]}" width="18"> ${anio}`] = grupo;
-      });
+        <div class="seccion-titulo">
+          <i class="fa-solid fa-filter"></i>
+          Filtros
+        </div>
 
-      L.control.layers(null, capas, { collapsed: false }).addTo(map);
+        <div class="fila-filtros">
+
+          <div class="campo">
+            <label for="filtroAnio">Año</label>
+
+            <select id="filtroAnio" class="select-control">
+              <option value="">Todos los años</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="filtroMunicipio">Municipio</label>
+
+            <select id="filtroMunicipio" class="select-control">
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="campo">
+          <label for="filtroInstitucion">Institución</label>
+
+          <select id="filtroInstitucion" class="select-control">
+            <option value="">Todas las instituciones</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="filtroSupervisor">Supervisor IGAL</label>
+
+          <select id="filtroSupervisor" class="select-control">
+            <option value="">Todos los supervisores</option>
+          </select>
+        </div>
+
+        <div class="acciones">
+
+          <button
+            id="btnMostrarTodo"
+            class="btn btn-primario"
+            type="button"
+          >
+            <i class="fa-solid fa-earth-americas"></i>
+            Mostrar todo
+          </button>
+
+          <button
+            id="btnLimpiar"
+            class="btn btn-secundario"
+            type="button"
+          >
+            <i class="fa-solid fa-rotate-left"></i>
+            Limpiar
+          </button>
+
+        </div>
+
+        <div class="resumen">
+
+          <div class="resumen-card">
+            <span>Total registrado</span>
+            <strong id="contadorTotal">0</strong>
+          </div>
+
+          <div class="resumen-card verde">
+            <span>Resultados visibles</span>
+            <strong id="contadorVisibles">0</strong>
+          </div>
+
+        </div>
+
+        <div class="resultados-cabecera">
+          <h3>Resultados</h3>
+          <span id="textoResultados">0 registros</span>
+        </div>
+
+        <div id="resultadosBusqueda">
+          <div class="sin-resultados">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Cargando investigaciones...
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Indicador de carga -->
+    <div id="cargando" class="cargando">
+      <div class="cargando-icono"></div>
+      <p>Cargando información del mapa...</p>
+    </div>
+
+  </main>
+
+  <script>
+    /* ======================================================
+       CONFIGURACIÓN GENERAL
+    ====================================================== */
+
+    const csvUrl =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_p-iO2tSlZBW5vhbLZUoxTDqUQhs8EgNJRm5kilNrNyQy_YDuJo4q9D-qs7ehKw7UEKoRCy0DOqFI/pub?output=csv";
+
+    const centroInicial = [15.5933, -90.3543];
+    const zoomInicial = 9;
+
+    const coloresPorAnio = {
+      "2023": "#6955b5",
+      "2024": "#168367",
+      "2025": "#d07918",
+      "2026": "#b23a48",
+      "Sin año": "#687386",
+      "default": "#254b94"
+    };
+
+    /* ======================================================
+       MAPA
+    ====================================================== */
+
+    const map = L.map("map", {
+      fullscreenControl: true,
+      fullscreenControlOptions: {
+        position: "topright",
+        title: "Pantalla completa",
+        titleCancel: "Salir de pantalla completa"
+      },
+      zoomControl: false
+    }).setView(centroInicial, zoomInicial);
+
+    L.control.zoom({
+      position: "topright"
+    }).addTo(map);
+
+    /*
+      Mapas base.
+
+      Google Satellite no es un servicio oficial documentado para uso
+      público mediante Leaflet. Se conserva como opción, pero también se
+      incluye OpenStreetMap como alternativa estable.
+    */
+
+    const mapaCalles = L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }
+    );
+
+    const mapaSatelital = L.tileLayer(
+      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+      {
+        maxZoom: 20,
+        attribution: "&copy; Google"
+      }
+    );
+
+    const mapaHibrido = L.tileLayer(
+      "https://mt1.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}",
+      {
+        maxZoom: 20,
+        attribution: "&copy; Google"
+      }
+    );
+
+    mapaHibrido.addTo(map);
+
+    const mapasBase = {
+      "Mapa híbrido": mapaHibrido,
+      "Imagen satelital": mapaSatelital,
+      "Mapa de calles": mapaCalles
+    };
+
+    L.control.layers(
+      mapasBase,
+      null,
+      {
+        position: "topright",
+        collapsed: true
+      }
+    ).addTo(map);
+
+    /* ======================================================
+       GRUPOS DE MARCADORES
+    ====================================================== */
+
+    const clusterGroup = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      removeOutsideVisibleBounds: true,
+      maxClusterRadius: 52,
+      disableClusteringAtZoom: 17
+    });
+
+    clusterGroup.addTo(map);
+
+    const todosLosMarcadores = [];
+    let datosOriginales = [];
+
+    /* ======================================================
+       REFERENCIAS DEL DOM
+    ====================================================== */
+
+    const panelLateral = document.getElementById("panelLateral");
+    const btnAbrirPanel = document.getElementById("btnAbrirPanel");
+    const btnCerrarPanel = document.getElementById("btnCerrarPanel");
+
+    const busquedaGeneral = document.getElementById("busquedaGeneral");
+    const filtroAnio = document.getElementById("filtroAnio");
+    const filtroMunicipio = document.getElementById("filtroMunicipio");
+    const filtroInstitucion = document.getElementById("filtroInstitucion");
+    const filtroSupervisor = document.getElementById("filtroSupervisor");
+
+    const btnMostrarTodo = document.getElementById("btnMostrarTodo");
+    const btnLimpiar = document.getElementById("btnLimpiar");
+
+    const contadorTotal = document.getElementById("contadorTotal");
+    const contadorVisibles = document.getElementById("contadorVisibles");
+    const textoResultados = document.getElementById("textoResultados");
+    const resultadosBusqueda =
+      document.getElementById("resultadosBusqueda");
+
+    const cargando = document.getElementById("cargando");
+
+    /* ======================================================
+       FUNCIONES AUXILIARES
+    ====================================================== */
+
+    function textoSeguro(valor) {
+      return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
-  });
 
-  document.getElementById("btnBuscar").addEventListener("click", function () {
-    const campo = document.getElementById("campoBusqueda").value;
-    const valor = document.getElementById("valorBusqueda").value.trim().toLowerCase();
-    const resultadosDiv = document.getElementById("resultadosBusqueda");
-    resultadosDiv.innerHTML = "";
+    function limpiarTexto(valor) {
+      return String(valor ?? "")
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
 
-    let encontrados = [];
+    function obtenerValor(row, nombreCampo) {
+      return String(row[nombreCampo] ?? "").trim();
+    }
 
-    todosLosMarcadores.forEach(marker => {
-      const dato = marker.options.datos[campo]?.toLowerCase() || "";
-      if (dato.includes(valor)) {
-        encontrados.push(marker);
-        const div = document.createElement("div");
-        div.className = "resultado-item";
-        div.textContent = marker.options.datos["Nombre"];
-        div.onclick = () => {
-          map.setView(marker.getLatLng(), 16);
-          marker.openPopup();
-        };
-        resultadosDiv.appendChild(div);
+    function convertirCoordenada(valor) {
+      if (valor === null || valor === undefined) {
+        return NaN;
+      }
+
+      return parseFloat(
+        String(valor)
+          .trim()
+          .replace(/\s/g, "")
+          .replace(",", ".")
+      );
+    }
+
+    function ordenarTexto(a, b) {
+      return a.localeCompare(
+        b,
+        "es",
+        {
+          sensitivity: "base",
+          numeric: true
+        }
+      );
+    }
+
+    function colorDelAnio(anio) {
+      return coloresPorAnio[anio] || coloresPorAnio.default;
+    }
+
+    function crearIconoMarcador(anio) {
+      const color = colorDelAnio(anio);
+
+      return L.divIcon({
+        className: "",
+        html: `
+          <div
+            class="marcador-investigacion"
+            style="background:${color};"
+          >
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+        `,
+        iconSize: [38, 42],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -35]
+      });
+    }
+
+    /*
+      Convierte distintos enlaces de Google Drive en una URL apta
+      para mostrar la imagen.
+    */
+
+    function convertirUrlImagen(urlOriginal) {
+      if (!urlOriginal) {
+        return "";
+      }
+
+      const url = String(urlOriginal).trim();
+
+      if (!url) {
+        return "";
+      }
+
+      let coincidencia = url.match(/\/file\/d\/([^/]+)/);
+
+      if (coincidencia && coincidencia[1]) {
+        return `https://drive.google.com/thumbnail?id=${coincidencia[1]}&sz=w1000`;
+      }
+
+      coincidencia = url.match(/[?&]id=([^&]+)/);
+
+      if (coincidencia && coincidencia[1]) {
+        return `https://drive.google.com/thumbnail?id=${coincidencia[1]}&sz=w1000`;
+      }
+
+      coincidencia = url.match(/\/d\/([^/]+)/);
+
+      if (coincidencia && coincidencia[1]) {
+        return `https://drive.google.com/thumbnail?id=${coincidencia[1]}&sz=w1000`;
+      }
+
+      return url;
+    }
+
+    function esEnlaceValido(url) {
+      if (!url) {
+        return false;
+      }
+
+      try {
+        const enlace = new URL(url);
+        return ["http:", "https:"].includes(enlace.protocol);
+      } catch (error) {
+        return false;
+      }
+    }
+
+    /* ======================================================
+       POPUP
+    ====================================================== */
+
+    function crearPopup(datos) {
+      const fotoUrl = convertirUrlImagen(datos.foto);
+
+      const imagenHTML = fotoUrl
+        ? `
+          <img
+            class="popup-img"
+            src="${textoSeguro(fotoUrl)}"
+            alt="Imagen de la investigación"
+            loading="lazy"
+            onerror="
+              this.style.display='none';
+              this.nextElementSibling.style.display='flex';
+            "
+          >
+
+          <div
+            class="popup-sin-imagen"
+            style="display:none;"
+          >
+            <i class="fa-solid fa-image"></i>
+          </div>
+        `
+        : `
+          <div class="popup-sin-imagen">
+            <i class="fa-solid fa-image"></i>
+          </div>
+        `;
+
+      const enlaceDiagnostico = esEnlaceValido(datos.diagnostico)
+        ? `
+          <a
+            class="popup-btn"
+            href="${textoSeguro(datos.diagnostico)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i class="fa-solid fa-file-arrow-down"></i>
+            Ver diagnóstico
+          </a>
+        `
+        : "";
+
+      const enlaceUbicacion = `
+        <a
+          class="popup-btn secundario"
+          href="https://www.google.com/maps?q=${datos.lat},${datos.lng}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="fa-solid fa-location-dot"></i>
+          Ver ubicación
+        </a>
+      `;
+
+      return `
+        <article class="popup-contenedor">
+
+          <div class="popup-imagen-contenedor">
+            ${imagenHTML}
+            <span class="popup-anio">
+              ${textoSeguro(datos.anio)}
+            </span>
+          </div>
+
+          <div class="popup-cuerpo">
+
+            <h3 class="popup-titulo">
+              ${textoSeguro(datos.nombre || "Investigación sin título")}
+            </h3>
+
+            <div class="popup-datos">
+
+              ${
+                datos.institucion
+                  ? `
+                    <div class="popup-fila">
+                      <i class="fa-solid fa-building-columns"></i>
+                      <div>
+                        <strong>Institución:</strong><br>
+                        ${textoSeguro(datos.institucion)}
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }
+
+              ${
+                datos.localizacion || datos.municipio
+                  ? `
+                    <div class="popup-fila">
+                      <i class="fa-solid fa-location-dot"></i>
+                      <div>
+                        <strong>Localización:</strong><br>
+                        ${textoSeguro(
+                          datos.localizacion ||
+                          datos.municipio
+                        )}
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }
+
+              ${
+                datos.municipio
+                  ? `
+                    <div class="popup-fila">
+                      <i class="fa-solid fa-map"></i>
+                      <div>
+                        <strong>Municipio:</strong><br>
+                        ${textoSeguro(datos.municipio)}
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }
+
+              ${
+                datos.supervisorIgal
+                  ? `
+                    <div class="popup-fila">
+                      <i class="fa-solid fa-user-tie"></i>
+                      <div>
+                        <strong>Supervisor IGAL:</strong><br>
+                        ${textoSeguro(datos.supervisorIgal)}
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }
+
+              ${
+                datos.supervisorUnidad
+                  ? `
+                    <div class="popup-fila">
+                      <i class="fa-solid fa-user-check"></i>
+                      <div>
+                        <strong>Supervisor de unidad:</strong><br>
+                        ${textoSeguro(datos.supervisorUnidad)}
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }
+
+              ${
+                datos.diagnostico && !esEnlaceValido(datos.diagnostico)
+                  ? `
+                    <div class="popup-fila">
+                      <i class="fa-solid fa-file-lines"></i>
+                      <div>
+                        <strong>Diagnóstico:</strong><br>
+                        ${textoSeguro(datos.diagnostico)}
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }
+
+            </div>
+
+            <div class="popup-acciones">
+              ${enlaceDiagnostico}
+              ${enlaceUbicacion}
+            </div>
+
+          </div>
+        </article>
+      `;
+    }
+
+    /* ======================================================
+       CARGA DEL CSV
+    ====================================================== */
+
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      skipEmptyLines: "greedy",
+
+      complete: function(results) {
+        procesarDatos(results.data);
+      },
+
+      error: function(error) {
+        console.error("Error al cargar el CSV:", error);
+        mostrarErrorCarga();
       }
     });
 
-    if (encontrados.length > 0) {
-      const grupo = L.featureGroup(encontrados);
-      map.fitBounds(grupo.getBounds());
-    } else {
-      resultadosDiv.innerHTML = "<em>No se encontraron resultados.</em>";
+    function procesarDatos(filas) {
+      datosOriginales = [];
+      todosLosMarcadores.length = 0;
+      clusterGroup.clearLayers();
+
+      filas.forEach(function(row, indice) {
+        const lat = convertirCoordenada(obtenerValor(row, "Latitud"));
+        const lng = convertirCoordenada(obtenerValor(row, "Longitud"));
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          console.warn(
+            `Fila ${indice + 2} omitida por coordenadas inválidas.`,
+            row
+          );
+
+          return;
+        }
+
+        const datos = {
+          id: indice,
+          nombre: obtenerValor(row, "Nombre") || "Sin nombre",
+          institucion: obtenerValor(row, "Institucion"),
+          localizacion: obtenerValor(row, "Localizacion"),
+          municipio: obtenerValor(row, "Municipio"),
+          anio: obtenerValor(row, "Anio") || "Sin año",
+          supervisorIgal: obtenerValor(row, "Suigal"),
+          supervisorUnidad: obtenerValor(row, "Sunidad"),
+          diagnostico: obtenerValor(row, "Codiagnostico"),
+          foto: obtenerValor(row, "Foto"),
+          lat: lat,
+          lng: lng
+        };
+
+        datos.textoBusqueda = limpiarTexto([
+          datos.nombre,
+          datos.institucion,
+          datos.localizacion,
+          datos.municipio,
+          datos.anio,
+          datos.supervisorIgal,
+          datos.supervisorUnidad,
+          datos.diagnostico
+        ].join(" "));
+
+        const marker = L.marker(
+          [lat, lng],
+          {
+            icon: crearIconoMarcador(datos.anio),
+            title: datos.nombre
+          }
+        );
+
+        marker.datosInvestigacion = datos;
+        marker.bindPopup(crearPopup(datos), {
+          maxWidth: 330,
+          minWidth: 270,
+          autoPanPadding: [40, 40]
+        });
+
+        marker.on("click", function() {
+          destacarResultado(datos.id);
+        });
+
+        datos.marker = marker;
+
+        datosOriginales.push(datos);
+        todosLosMarcadores.push(marker);
+      });
+
+      clusterGroup.addLayers(todosLosMarcadores);
+
+      llenarFiltros();
+      actualizarContadores(datosOriginales.length);
+      renderizarResultados(datosOriginales);
+      crearLeyenda();
+
+      if (todosLosMarcadores.length > 0) {
+        const grupo = L.featureGroup(todosLosMarcadores);
+        map.fitBounds(grupo.getBounds(), {
+          padding: [40, 40],
+          maxZoom: 11
+        });
+      }
+
+      cargando.classList.add("oculto");
     }
-  });
-</script>
+
+    function mostrarErrorCarga() {
+      cargando.classList.add("oculto");
+
+      resultadosBusqueda.innerHTML = `
+        <div class="sin-resultados">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          No fue posible cargar la información. Verifique que la hoja de
+          Google Sheets esté publicada correctamente como archivo CSV.
+        </div>
+      `;
+    }
+
+    /* ======================================================
+       LLENAR FILTROS
+    ====================================================== */
+
+    function valoresUnicos(campo) {
+      return [
+        ...new Set(
+          datosOriginales
+            .map(item => item[campo])
+            .filter(valor => valor && valor.trim())
+        )
+      ].sort(ordenarTexto);
+    }
+
+    function agregarOpciones(select, valores, textoInicial) {
+      select.innerHTML = `<option value="">${textoInicial}</option>`;
+
+      valores.forEach(function(valor) {
+        const opcion = document.createElement("option");
+        opcion.value = valor;
+        opcion.textContent = valor;
+        select.appendChild(opcion);
+      });
+    }
+
+    function llenarFiltros() {
+      const anios = valoresUnicos("anio").sort(function(a, b) {
+        if (a === "Sin año") return 1;
+        if (b === "Sin año") return -1;
+        return Number(b) - Number(a);
+      });
+
+      agregarOpciones(
+        filtroAnio,
+        anios,
+        "Todos los años"
+      );
+
+      agregarOpciones(
+        filtroMunicipio,
+        valoresUnicos("municipio"),
+        "Todos los municipios"
+      );
+
+      agregarOpciones(
+        filtroInstitucion,
+        valoresUnicos("institucion"),
+        "Todas las instituciones"
+      );
+
+      agregarOpciones(
+        filtroSupervisor,
+        valoresUnicos("supervisorIgal"),
+        "Todos los supervisores"
+      );
+    }
+
+    /* ======================================================
+       FILTRADO
+    ====================================================== */
+
+    function aplicarFiltros() {
+      const texto = limpiarTexto(busquedaGeneral.value);
+      const anio = filtroAnio.value;
+      const municipio = filtroMunicipio.value;
+      const institucion = filtroInstitucion.value;
+      const supervisor = filtroSupervisor.value;
+
+      const resultados = datosOriginales.filter(function(item) {
+        const coincideTexto =
+          !texto ||
+          item.textoBusqueda.includes(texto);
+
+        const coincideAnio =
+          !anio ||
+          item.anio === anio;
+
+        const coincideMunicipio =
+          !municipio ||
+          item.municipio === municipio;
+
+        const coincideInstitucion =
+          !institucion ||
+          item.institucion === institucion;
+
+        const coincideSupervisor =
+          !supervisor ||
+          item.supervisorIgal === supervisor;
+
+        return (
+          coincideTexto &&
+          coincideAnio &&
+          coincideMunicipio &&
+          coincideInstitucion &&
+          coincideSupervisor
+        );
+      });
+
+      actualizarMapa(resultados);
+      renderizarResultados(resultados);
+      actualizarContadores(resultados.length);
+    }
+
+    function actualizarMapa(resultados) {
+      clusterGroup.clearLayers();
+
+      const marcadoresVisibles = resultados.map(
+        item => item.marker
+      );
+
+      clusterGroup.addLayers(marcadoresVisibles);
+
+      if (marcadoresVisibles.length === 1) {
+        const marker = marcadoresVisibles[0];
+
+        map.setView(
+          marker.getLatLng(),
+          15,
+          {
+            animate: true
+          }
+        );
+      }
+
+      if (marcadoresVisibles.length > 1) {
+        const grupo = L.featureGroup(marcadoresVisibles);
+
+        map.fitBounds(
+          grupo.getBounds(),
+          {
+            padding: [50, 50],
+            maxZoom: 13
+          }
+        );
+      }
+    }
+
+    /* ======================================================
+       RESULTADOS DEL PANEL
+    ====================================================== */
+
+    function renderizarResultados(resultados) {
+      resultadosBusqueda.innerHTML = "";
+
+      textoResultados.textContent =
+        `${resultados.length} ${
+          resultados.length === 1
+            ? "registro"
+            : "registros"
+        }`;
+
+      if (resultados.length === 0) {
+        resultadosBusqueda.innerHTML = `
+          <div class="sin-resultados">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            No se encontraron investigaciones con los criterios seleccionados.
+            Pruebe con otra palabra o elimine alguno de los filtros.
+          </div>
+        `;
+
+        return;
+      }
+
+      const maximoResultados = 100;
+      const resultadosMostrados = resultados.slice(0, maximoResultados);
+
+      resultadosMostrados.forEach(function(item) {
+        const div = document.createElement("article");
+
+        div.className = "resultado-item";
+        div.dataset.id = item.id;
+
+        div.innerHTML = `
+          <div class="resultado-titulo">
+            ${textoSeguro(item.nombre)}
+          </div>
+
+          <div class="resultado-detalle">
+
+            ${
+              item.municipio
+                ? `
+                  <span>
+                    <i class="fa-solid fa-location-dot"></i>
+                    ${textoSeguro(item.municipio)}
+                  </span>
+                `
+                : ""
+            }
+
+            <span>
+              <i class="fa-solid fa-calendar"></i>
+              ${textoSeguro(item.anio)}
+            </span>
+
+            ${
+              item.institucion
+                ? `
+                  <span>
+                    <i class="fa-solid fa-building"></i>
+                    ${textoSeguro(item.institucion)}
+                  </span>
+                `
+                : ""
+            }
+
+          </div>
+        `;
+
+        div.addEventListener("click", function() {
+          abrirMarcador(item.marker);
+        });
+
+        resultadosBusqueda.appendChild(div);
+      });
+
+      if (resultados.length > maximoResultados) {
+        const aviso = document.createElement("div");
+        aviso.className = "sin-resultados";
+
+        aviso.innerHTML = `
+          Se muestran los primeros ${maximoResultados} resultados.
+          Utilice los filtros para reducir la búsqueda.
+        `;
+
+        resultadosBusqueda.appendChild(aviso);
+      }
+    }
+
+    function abrirMarcador(marker) {
+      const latlng = marker.getLatLng();
+
+      map.setView(
+        latlng,
+        16,
+        {
+          animate: true
+        }
+      );
+
+      /*
+        zoomToShowLayer permite abrir correctamente un marcador,
+        aunque esté dentro de un clúster.
+      */
+
+      clusterGroup.zoomToShowLayer(marker, function() {
+        marker.openPopup();
+      });
+
+      if (window.innerWidth <= 900) {
+        cerrarPanel();
+      }
+    }
+
+    function destacarResultado(id) {
+      document
+        .querySelectorAll(".resultado-item")
+        .forEach(function(elemento) {
+          elemento.style.borderColor = "";
+          elemento.style.background = "";
+        });
+
+      const resultado = document.querySelector(
+        `.resultado-item[data-id="${id}"]`
+      );
+
+      if (resultado) {
+        resultado.style.borderColor = "#6686c7";
+        resultado.style.background = "#f1f5ff";
+        resultado.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+      }
+    }
+
+    function actualizarContadores(visibles) {
+      contadorTotal.textContent = datosOriginales.length;
+      contadorVisibles.textContent = visibles;
+    }
+
+    /* ======================================================
+       LEYENDA
+    ====================================================== */
+
+    function crearLeyenda() {
+      const aniosExistentes = valoresUnicos("anio").sort(function(a, b) {
+        if (a === "Sin año") return 1;
+        if (b === "Sin año") return -1;
+        return Number(b) - Number(a);
+      });
+
+      const leyenda = L.control({
+        position: "bottomright"
+      });
+
+      leyenda.onAdd = function() {
+        const div = L.DomUtil.create(
+          "div",
+          "leyenda-anios"
+        );
+
+        let contenido = "<strong>Año de investigación</strong>";
+
+        aniosExistentes.forEach(function(anio) {
+          contenido += `
+            <div class="leyenda-fila">
+              <span
+                class="leyenda-punto"
+                style="background:${colorDelAnio(anio)};"
+              ></span>
+              <span>${textoSeguro(anio)}</span>
+            </div>
+          `;
+        });
+
+        div.innerHTML = contenido;
+
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.disableScrollPropagation(div);
+
+        return div;
+      };
+
+      leyenda.addTo(map);
+    }
+
+    /* ======================================================
+       EVENTOS
+    ====================================================== */
+
+    let temporizadorBusqueda;
+
+    busquedaGeneral.addEventListener("input", function() {
+      clearTimeout(temporizadorBusqueda);
+
+      temporizadorBusqueda = setTimeout(
+        aplicarFiltros,
+        220
+      );
+    });
+
+    [
+      filtroAnio,
+      filtroMunicipio,
+      filtroInstitucion,
+      filtroSupervisor
+    ].forEach(function(elemento) {
+      elemento.addEventListener(
+        "change",
+        aplicarFiltros
+      );
+    });
+
+    btnLimpiar.addEventListener("click", function() {
+      busquedaGeneral.value = "";
+      filtroAnio.value = "";
+      filtroMunicipio.value = "";
+      filtroInstitucion.value = "";
+      filtroSupervisor.value = "";
+
+      aplicarFiltros();
+      busquedaGeneral.focus();
+    });
+
+    btnMostrarTodo.addEventListener("click", function() {
+      busquedaGeneral.value = "";
+      filtroAnio.value = "";
+      filtroMunicipio.value = "";
+      filtroInstitucion.value = "";
+      filtroSupervisor.value = "";
+
+      actualizarMapa(datosOriginales);
+      renderizarResultados(datosOriginales);
+      actualizarContadores(datosOriginales.length);
+
+      if (todosLosMarcadores.length > 0) {
+        const grupo = L.featureGroup(todosLosMarcadores);
+
+        map.fitBounds(
+          grupo.getBounds(),
+          {
+            padding: [50, 50],
+            maxZoom: 11
+          }
+        );
+      }
+    });
+
+    busquedaGeneral.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        aplicarFiltros();
+      }
+
+      if (event.key === "Escape") {
+        busquedaGeneral.value = "";
+        aplicarFiltros();
+      }
+    });
+
+    /* ======================================================
+       PANEL RESPONSIVE
+    ====================================================== */
+
+    function abrirPanel() {
+      panelLateral.classList.remove("oculto");
+      btnAbrirPanel.classList.remove("visible");
+
+      setTimeout(function() {
+        map.invalidateSize();
+      }, 320);
+    }
+
+    function cerrarPanel() {
+      panelLateral.classList.add("oculto");
+      btnAbrirPanel.classList.add("visible");
+
+      setTimeout(function() {
+        map.invalidateSize();
+      }, 320);
+    }
+
+    btnCerrarPanel.addEventListener("click", cerrarPanel);
+    btnAbrirPanel.addEventListener("click", abrirPanel);
+
+    window.addEventListener("resize", function() {
+      if (window.innerWidth > 900) {
+        panelLateral.classList.remove("oculto");
+        btnAbrirPanel.classList.remove("visible");
+      }
+
+      map.invalidateSize();
+    });
+  </script>
 
 </body>
 </html>
